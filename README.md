@@ -56,12 +56,6 @@ calc.store_results(results_folder="folder_path_for_results")
 
 In the above example, the DataLoader is used to load the ENTSO-E data, and the CalculatorMRIO is used to process the data through the MRIO approach. The results are then stored in the specified folder.
 
-This step is necessary to generate the data needed for the Linear Model Tree training.
-
-### Linear Model Tree Training
-
-Once the data is loaded and processed, you can train the Linear Model Tree using the `LinearModelTree` class.
-
 ---
 
 ## CO2 intensity factors
