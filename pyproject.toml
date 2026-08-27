@@ -1,0 +1,22 @@
+[project]
+name = "twig-emissions-indicators"
+version = "0.1.2"
+description = ""
+authors = [
+    {name = "Noé Husser",email = "noe@twig.energy"}
+]
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "pandas (>=3.0.5,<4.0.0)",
+    "entsoe-py (>=0.8.0,<0.9.0)",
+    "matplotlib (>=3.11.1,<4.0.0)",
+    "linear-tree (>=0.3.5,<0.4.0)"
+]
+
+[tool.poetry]
+packages = [{include = "twig_emissions_indicators", from = "src"}]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
