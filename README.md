@@ -16,6 +16,13 @@ The core functionalities of the `twig-emissions-indicators` package are:
 - Linear Model Tree Training for Marginal Emissions Factors quantification
 
 ---
+## Funding & Development
+
+The research leading to this work is being carried out as part of the HELIOS (Hybrid Energy Asset Live Operating System) project, funded through the ELFORSK grant under the Danish Energy Agency’s Energy Technology Development and Demonstration Program (EUDP), as part of the special fund for Smart Energy and Digitalization.
+
+This GitHub repository was developed and is maintained by [Twig Energy](https://www.twig.energy/en) as part of the project.
+
+---
 
 ## Installation
 
@@ -103,7 +110,6 @@ The package depends on the following libraries:
 - matplotlib (>=3.11.1,<4.0.0)
 
 ---
-
 ## Roadmap
 
 - [ ] Add the Linear Tree Model Part  
