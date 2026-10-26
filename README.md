@@ -53,7 +53,39 @@ This step is necessary to generate the data needed for the Linear Model Tree tra
 
 ### Linear Model Tree Training
 
-Once the data is loaded and processed, you can train the Linear Model Tree using the `LinearModelTree` class.
+Once the MRIO calculation has produced emissions data, prepare three time-aligned inputs:
+
+- `dE`: a `pandas.Series` containing the change in emissions (the prediction target).
+- `dL`: a `pandas.Series` containing the corresponding change in load.
+- `X`: a `pandas.DataFrame` of explanatory features, such as generation mix or weather.
+
+All three inputs should use the same `DatetimeIndex`. The model combines `dL` with `X`; by default, it treats `Hour`, `Month`, and `Dow` as circular time features when those columns are present. 
+
+```python
+from twig_emissions_indicators.linearmodeltree import LinearTreeModel
+
+# Build these from your processed data. Keep the same DatetimeIndex on all inputs.
+dE = data["delta_emissions"]
+dL = data["delta_load"]
+X = data[["Hour", "Month", "Dow", "Wind", "Solar", "Gas"]]
+
+model = LinearTreeModel(random_state=42)
+model.fit(dE=dE, dL=dL, X=X, test_year=2025)
+
+# The fitted model predicts the target (delta emissions) using dL as the regressor.
+predicted_dE = model.predict(X, dL=dL)
+print(f"Test R²: {model.get_results().metrics['test_r2']:.3f}")
+
+# Inspect the estimated marginal emissions factors for the held-out observations.
+results = model.get_results()
+print(results.mef.head())
+
+model.save("linear_tree_model.joblib")
+```
+
+`fit` drops rows with missing target or feature values. By default it trains on years before `test_year` and evaluates on that year (2025 by default); pass `test_size` instead to use a chronological fraction of the observations as the test set, for example `model.fit(dE, dL, X, test_size=0.2)`. Hyperparameters are tuned using time-series cross-validation, so training requires enough observations for the configured number of splits (`n_splits`, default 5).
+
+The results container returned by `get_results()` includes train/test metrics, feature importances, selected features, baseline metrics, and `g_k`, the estimated marginal emissions factor for each held-out row. A saved model can be restored with `LinearTreeModel.load("linear_tree_model.joblib")`.
 
 ---
 
@@ -101,12 +133,4 @@ The package depends on the following libraries:
 - pandas (>=3.0.5,<4.0.0)
 - entsoe-py (>=0.8.0,<0.9.0)
 - matplotlib (>=3.11.1,<4.0.0)
-
----
-
-## Roadmap
-
-- [ ] Add the Linear Tree Model Part  
-  - [ ] Training script
-  - [ ] Comparison with other models
-- [ ] Add the Data Vizualization part
+- linear-tree (fork compatible with scikit-learn >= 1.7.0)
