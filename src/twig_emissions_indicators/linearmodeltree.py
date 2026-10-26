@@ -21,7 +21,7 @@ from lineartree import LinearTreeRegressor
 class LinearTreeResults:
     """Container for model results and diagnostics."""
     model: LinearTreeRegressor
-    g_k: pd.Series
+    mef: pd.Series
     X_train: pd.DataFrame
     X_test: pd.DataFrame
     y_train: pd.Series
@@ -124,11 +124,6 @@ class LinearTreeModel(BaseEstimator, RegressorMixin):
                     to_drop.add(colname)
         X_transformed.drop(columns=list(to_drop), inplace=True)
 
-        # Drop problematic columns
-        drop_cols = ["Delta_Net_Load"]
-        existing_drop = [c for c in drop_cols if c in X_transformed.columns]
-        X_transformed.drop(columns=existing_drop, inplace=True)
-
         # Scale features
         self.scaler_ = StandardScaler()
         X_scaled = pd.DataFrame(
@@ -179,7 +174,6 @@ class LinearTreeModel(BaseEstimator, RegressorMixin):
             linear_features=self.linear_features,
             split_features=self.split_features or list(range(1, X_train.shape[1])),
             n_jobs=-1,
-            random_state=self.random_state,
         )
 
         search = GridSearchCV(
@@ -291,7 +285,7 @@ class LinearTreeModel(BaseEstimator, RegressorMixin):
         # Store results
         self.results_ = LinearTreeResults(
             model=self.model_,
-            g_k=self._extract_g_k(X_test_selected),
+            mef=self._extract_mef(X_test_selected),
             X_train=X_train_selected,
             X_test=X_test_selected,
             y_train=y_train,
@@ -306,16 +300,16 @@ class LinearTreeModel(BaseEstimator, RegressorMixin):
 
         return self
 
-    def _extract_g_k(self, X: pd.DataFrame) -> pd.Series:
-        """Extract marginal emissions factors (g_k) from the model's leaves."""
+    def _extract_mef(self, X: pd.DataFrame) -> pd.Series:
+        """Extract marginal emissions factors from the model's leaves."""
         leaves = self.model_.summary(only_leaves=True)
         leaves_index = self.model_.apply(X)
-        g_k = pd.Series(np.zeros(len(X)), index=X.index, name="g_k")
+        mef = pd.Series(np.zeros(len(X)), index=X.index, name="g_k")
         for leaf_id in np.unique(leaves_index):
             mask = leaves_index == leaf_id
             coefs = leaves[leaf_id]["models"].coef_
-            g_k[mask] = coefs[0]  # g_k is coefficient on dL
-        return g_k
+            mef[mask] = coefs[0]  # mef is coefficient on dL
+        return mef
 
     def _compute_metrics(
         self,
